@@ -1,6 +1,6 @@
 # Curiosity Driven Goal Exploration of Learned Disentangled Goal Spaces
 
-This folder hosts the code to reproduce the results presented in the paper [Curiosity Driven Goal Exploration of Learned Disentangled Goal Spaces]. In this paper, we study the impact of the structure of the representation when it is used as a goal space in Intrinsically Motivated Goal Exploration Processes. Experiments are performed on a simple task in which multi-joint arm must handle and gather an oobject in a 2D space in the presence of a distractor which cannot be handled and follows a random walk.
+This folder hosts the code to reproduce the results presented in the paper [Curiosity Driven Goal Exploration of Learned Disentangled Goal Spaces](link). In this paper, we study the impact of the structure of the representation when it is used as a goal space in Intrinsically Motivated Goal Exploration Processes. Experiments are performed on a simple task in which multi-joint arm must handle and gather an object in a 2D space in the presence of a distractor which cannot be handled and follows a random walk.
 
 ## Running the experiments
 
