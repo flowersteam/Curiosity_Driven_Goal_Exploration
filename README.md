@@ -7,8 +7,8 @@ This folder hosts the code to reproduce the results presented in the paper [Curi
 To run a single experiment, you can run one of the three following python scripts:
 
 + `rpe.py` to perform a Random Parameterization Exploration
-+ `mge_fi_armballs.py` to perform a Modular(Random) Goal Exploration using Engineered Features Representation
-+ `mge_rep_armballs.py` to perform a Modular(Random) Goal Exploration using a learned Representation
++ `mge_efr.py` to perform a Modular(Random) Goal Exploration using Engineered Features Representation
++ `mge_representation.py` to perform a Modular(Random) Goal Exploration using a learned Representation
 
 Examples of some exploration algorithms together with a demonstration of the environment are provided in the notebook:
 
