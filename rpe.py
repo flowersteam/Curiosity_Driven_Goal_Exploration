@@ -6,11 +6,9 @@ import json
 
 import numpy as np
 
-import sys
+from latentgoalexplo.actors import exploactors
+from latentgoalexplo.environments import armballs
 
-sys.path.append("./src")
-
-from src import actors, armball, armballs, bigarmballs, armstickball, armstickballs
 
 logging.basicConfig(level=logging.INFO,
                     format="[%(asctime)s] %(levelname)s[%(module)s:%(funcName)s:%(lineno)d]  %(message)s")
@@ -19,7 +17,7 @@ os.environ["JOBLIB_TEMP_FOLDER"] = "."
 
 def RandomParameterExplorationExperiment(static_env, env_config, n_exploration_iterations, seed, logdir, logger=None):
     logger.info("Starting random parameter exploration")
-    a = actors.RandomParameterizationExploration(static_env=static_env, **env_config)
+    a = exploactors.RandomParameterizationExploration(static_env=static_env, **env_config)
     a.reset()
     a.act(n_iter=n_exploration_iterations, render=False)
 
@@ -88,7 +86,7 @@ def main():
         args['name'] = ("RPE %s %s" % (args['environment'], str(datetime.datetime.now()))).title()
 
     if args['test']:
-        args['path'] = 'test_1'
+        args['path'] = 'test'
     args['path'] = os.path.join(args['path'], args['name'])
     logger = logging.getLogger(args['name'], )
     logger.setLevel(logging.INFO)

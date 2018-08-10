@@ -1,0 +1,11 @@
+{"test": false,
+"n_rbf": 7,
+"object_size": 0.1,
+"seed": 0,
+"distract_size": 0.15,
+"distract_noise": 0.1,
+"environment": "armballs",
+"sdev": 10.0,
+"path": "results/campaign/armballs_rpe/RPE_env:armballs_objectsize:0.1_distract_noise:0.1_date:060618-1929-914",
+"n_exploration_iterations": 20000,
+"name": "RPE_env:armballs_objectsize:0.1_distract_noise:0.1_date:060618-1929-914"}

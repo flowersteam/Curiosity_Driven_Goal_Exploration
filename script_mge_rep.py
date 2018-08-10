@@ -4,8 +4,8 @@
 import datetime
 import itertools
 
-PATH_TO_RESULTS = "results/campaign/armballs"
-PATH_TO_INTERPRETER = ""
+PATH_TO_RESULTS = "results/armballs"
+PATH_TO_INTERPRETER = "path/to/interpreter"
 
 envs = ['armballs']
 reps = ['vae', 'betavae']
@@ -22,7 +22,7 @@ params_iterator = list(itertools.product(envs, reps, interest_models, n_modules,
                                          explo_noises, n_bootstraps, exploration_iterations, explo_ratios))
 nb_runs = 20
 
-filename = 'campaign_{}.sh'.format(datetime.datetime.now().strftime("%d%m%y_%H%M"))
+filename = 'campaign_mge_rep.sh'.format(datetime.datetime.now().strftime("%d%m%y_%H%M"))
 with open(filename, 'w') as f:
     f.write("export EXP_INTERP='%s' ;\n" % PATH_TO_INTERPRETER)
     for (env, rep, interest_model, n_module, object_size, distract_noise, explo_noise, n_bootstrap, exploration_iteration, explo_ratio) in params_iterator:
@@ -33,7 +33,7 @@ with open(filename, 'w') as f:
             f.write('echo "=================> %s";\n' % name)
             f.write('echo "=================> %s" >> log.txt;\n' % name)
             f.write('export CUDA_VISIBLE_DEVICES=$agpu\n')
-            f.write("$EXP_INTERP mge_rep_armballs.py {env} {rep} {interest_model} --path={path} --name={name}"\
+            f.write("$EXP_INTERP mge_representation.py {env} {rep} {interest_model} --path={path} --name={name}"\
                     " --n_modules={n_module} --object_size={object_size} --distract_noise={distract_noise}"\
                     " --explo_noise_sdev={explo_noise} --explo_ratio={explo_ratio}"\
                     " --n_bootstrap={n_bootstrap} --n_exploration_iterations={exploration_iteration} --seed={seed}"\

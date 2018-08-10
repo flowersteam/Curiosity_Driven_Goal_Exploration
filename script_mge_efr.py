@@ -4,8 +4,8 @@
 import datetime
 import itertools
 
-PATH_TO_RESULTS = "results/campaign/armballs"
-PATH_TO_INTERPRETER = ""
+PATH_TO_RESULTS = "results/armballs"
+PATH_TO_INTERPRETER = "/path/to/interpreter"
 
 envs = ['armballs']
 reps = ['flat', 'modular']
@@ -21,18 +21,16 @@ params_iterator = list(itertools.product(envs, reps, interest_models, object_siz
                                          n_bootstraps, exploration_iterations, explo_ratios))
 nb_runs = 20
 
-filename = 'campaign_{}.sh'.format(datetime.datetime.now().strftime("%d%m%y_%H%M"))
+filename = 'campaign_mge_efr.sh'.format(datetime.datetime.now().strftime("%d%m%y_%H%M"))
 with open(filename, 'w') as f:
     f.write("export EXP_INTERP='%s' ;\n" % PATH_TO_INTERPRETER)
     for (env, rep, interest_model, object_size, distract_noise, explo_noise, n_bootstrap, exploration_iteration, explo_ratio) in params_iterator:
-        # f.write('ngpu="$(nvidia-smi -L | tee /dev/stderr | wc -l)"\n')
-        # f.write('agpu=0\n')
         for i in range(nb_runs):
             name = "MGE-FI_rep:{}_im:{}_env:{}_objectsize:{}_distract_noise:{}_explonoise:{}_date:{}".format(rep, interest_model, env, object_size, distract_noise, explo_noise, '$(date "+%d%m%y-%H%M-%3N")')
             f.write('echo "=================> %s";\n' % name)
             f.write('echo "=================> %s" >> log.txt;\n' % name)
             f.write('export CUDA_VISIBLE_DEVICES=$agpu\n')
-            f.write("$EXP_INTERP mge_fi_armballs.py {env} {rep} {interest_model} --path={path} --name={name}"\
+            f.write("$EXP_INTERP mge_efr.py {env} {rep} {interest_model} --path={path} --name={name}"\
                     " --object_size={object_size} --distract_noise={distract_noise} --explo_noise_sdev={explo_noise}"\
                     " --n_bootstrap={n_bootstrap} --explo_ratio={explo_ratio}"\
                     " --n_exploration_iterations={exploration_iteration} --seed={seed}"\
@@ -48,5 +46,4 @@ with open(filename, 'w') as f:
                                                                                    seed=i,
                                                                                    path=PATH_TO_RESULTS,
                                                                                    name='"{}"'.format(name)))
-            # f.write("agpu=$(((agpu+1)%ngpu))\n")
         f.write('wait\n')

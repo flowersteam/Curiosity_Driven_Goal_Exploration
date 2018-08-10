@@ -1,5 +1,6 @@
 import numpy as np
 import datetime
+import os
 
 import torch
 import torch.utils.data
@@ -9,7 +10,8 @@ from torch.nn import functional as F
 
 import visdom
 
-from actors import AbstractActor, IRepresentation, ITrainable, IParameterized
+from latentgoalexplo.actors.meta_actors import *
+
 
 CUDA = torch.cuda.is_available()
 device = torch.device("cuda" if CUDA else "cpu")
@@ -47,7 +49,8 @@ class BetaVAE(nn.Module):
         self.generate_architecture(network_type)
 
         self.visdom_record = visdom_record
-        self.visdom = visdom.Visdom(env=visdom_env)
+        if self.visdom_record:
+            self.visdom = visdom.Visdom(env=visdom_env)
         self.visdom_wins = dict()
 
     def generate_architecture(self, type='fc'):
@@ -404,7 +407,7 @@ class BetaVAE(nn.Module):
 
 class PytorchBetaVAERepresentation(AbstractActor, IRepresentation, ITrainable, IParameterized):
 
-    def __init__(self, n_latents, initial_epochs, beta, *args, network_type='cnn', n_channels=3, height=64, width=64,
+    def __init__(self, n_latents, initial_epochs, beta, *args, network_type='cnn', n_channels=3, height=70, width=70,
                  batch_size=128, learning_rate=1e-2, Ta=1, capacity=0, capacity_change_duration=1,
                  visdom_record=False, visdom_env="main", log_interval=40, store_loader_gpu=True, logdir='',
                  **kwargs):
@@ -810,6 +813,16 @@ class PytorchBetaVAERepresentation(AbstractActor, IRepresentation, ITrainable, I
         values, indices = KLD.sort(descending=True)
         self._kld_latents = values.cpu().detach().numpy()
         self._sorted_latents = indices.cpu().detach().numpy()
+
+
+model_path = os.path.dirname(os.path.abspath(__file__)) + '/../../weights/ArmBalls_rgb_BallDistract_ent'
+ArmBallsVAE = PytorchBetaVAERepresentation(n_latents=10, initial_epochs=0, beta=1, network_type='cnn',
+                                           n_channels=3, height=64, width=64)
+ArmBallsVAE.load_model(model_path)
+model_path = os.path.dirname(os.path.abspath(__file__)) + '/../../weights/ArmBalls_rgb_BallDistract'
+ArmBallsBetaVAE = PytorchBetaVAERepresentation(n_latents=10, initial_epochs=0, beta=1, network_type='cnn',
+                                               n_channels=3, height=64, width=64)
+ArmBallsBetaVAE.load_model(model_path)
 
 
 if __name__ == '__main__':

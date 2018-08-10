@@ -9,7 +9,7 @@ from explauto.exceptions import ExplautoBootstrapError
 from explauto.sensorimotor_model.non_parametric import NonParametric
 from explauto.interest_model.competences import competence_dist
 
-from interest_model import MiscRandomInterest, MiscGaussianInterest, MiscDiscretizedInterest
+from latentgoalexplo.curiosity.interest_model import MiscRandomInterest, MiscGaussianInterest, MiscDiscretizedInterest
 
 
 class LearningModule(Agent):

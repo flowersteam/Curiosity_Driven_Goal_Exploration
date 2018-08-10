@@ -1,8 +1,10 @@
 import numpy as np
 import gizeh
 
-from actors import FixedEpisodeDynamizer, RbfController, MatplotlibInteractiveRendering
-from meta_actors import *
+from latentgoalexplo.actors.meta_actors import *
+from latentgoalexplo.common.rendering import MatplotlibInteractiveRendering
+from latentgoalexplo.actors.controllers import RbfController
+from latentgoalexplo.environments.utils import FixedEpisodeDynamizer
 
 
 class ArmBalls(AbstractActor, IStaticEnvironment, IRewarding):
@@ -33,7 +35,8 @@ class ArmBalls(AbstractActor, IStaticEnvironment, IRewarding):
         self._object_handled = False
 
         # We set the space
-        self._action_space = np.array([[-1, 1]] * self._n_joints)
+        self.observation_space = np.array([[-1, 1]] * (len(self._arm_lengths) + 6))
+        self.action_space = np.array([[-1, 1]] * self._n_joints)
 
         # We set to None to rush error if reset not called
         self._reward = None
@@ -100,13 +103,7 @@ class ArmBalls(AbstractActor, IStaticEnvironment, IRewarding):
         self._actual_arm_pose = None
         self._object_handled = None
         self._reward = None
-        self._action_space = None
         self._observation = None
-
-    @property
-    def action_space(self):
-
-        return self._action_space
 
     @property
     def observation(self):
@@ -143,7 +140,8 @@ class ArmBallsRenderer(AbstractActor, IRenderer):
         self._distract_size = distract_size
         self._render_arm = render_arm
 
-        self._observation_space = np.array([[-1, 1]] * (len(self._arm_lengths) + 6))
+        # We set the spaces
+        self.action_space = np.array([[-1, 1]] * (len(self._arm_lengths) + 6))
 
         self._rendering = None
         self._typical_img = None
@@ -309,14 +307,16 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
         self._n_timesteps = n_timesteps
         self._sdev = sdev
 
-        self._action_space = np.concatenate([-np.ones((arm_lengths.shape[0] * n_rbf, 1)),
-                                             np.ones((arm_lengths.shape[0] * n_rbf, 1))], axis=-1)
+        # We set the spaces
+        self.observation_space = np.array([[-1, 1]] * 4)
+        self.action_space = np.array([[-1, 1]] * arm_lengths.shape[0] * n_rbf)
 
         self._dynamic_environment = FixedEpisodeDynamizer(static_env=ArmBalls, n_iter=n_timesteps,
                                                           arm_lengths=arm_lengths, object_size=object_size,
                                                           distract_size=distract_size, distract_noise=distract_noise)
         self._controller = RbfController(n_action_dims=len(arm_lengths), n_rbf=n_rbf,
                                          n_timesteps=n_timesteps, sdev=sdev)
+        self.render_interval = render_interval
         if render:
             self._renderer = MatplotlibInteractiveRendering(ArmBallsRenderer, width=500, height=500,
                                                             rgb=False, object_size=object_size,
@@ -329,6 +329,7 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
     def reset(self):
 
         self._dynamic_environment.reset()
+        self.n_iters = 0
 
         obs = self._dynamic_environment.observation_sequence
 
@@ -343,6 +344,8 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
         self._dynamic_environment.act(action_sequence)
         self._observation = self._dynamic_environment.observation_sequence[-1, -4:]
         self._hidden_state = self._dynamic_environment.observation_sequence[-1, -2:]
+        self.n_iters += 1
+        
         if render:
             for i in range(self._n_timesteps):
                 self._renderer.act(observation=self._dynamic_environment.observation_sequence[i], **kwargs)
@@ -361,11 +364,6 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
 
         return self._hidden_state
 
-    @property
-    def action_space(self) -> np.ndarray:
-
-        return self._action_space
-
     @classmethod
     def test(cls):
 
@@ -379,8 +377,8 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
 
     def __init__(self, arm_lengths=np.array([0.3, 0.2, 0.2, 0.1, 0.1, 0.05, 0.05]),
                  object_size=0.2, distract_size=0.15, distract_noise=0.1,
-                 n_rbf=5, sdev=5., n_timesteps=150, env_noise=0, render=False, rgb=False,
-                 render_arm=False, distract_first=False, **kwargs):
+                 n_rbf=5, sdev=5., n_timesteps=150, env_noise=0, render=False, render_interval=500,
+                 rgb=False, render_arm=False, distract_first=False, **kwargs):
 
         self._arm_lengths = arm_lengths
         self._object_size = object_size
@@ -390,14 +388,15 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
         self._n_timesteps = n_timesteps
         self._sdev = sdev
 
-        self._action_space = np.concatenate([-np.ones((arm_lengths.shape[0] * n_rbf, 1)),
-                                             np.ones((arm_lengths.shape[0] * n_rbf, 1))], axis=-1)
+        # We set the spaces
+        self.action_space = np.array([[-1, 1]] * arm_lengths.shape[0] * n_rbf)
 
         self._dynamic_environment = FixedEpisodeDynamizer(static_env=ArmBalls, n_iter=n_timesteps, arm_lengths=arm_lengths,
                                                           object_size=object_size, distract_size=distract_size,
                                                           distract_noise=distract_noise, **kwargs)
         self._controller = RbfController(n_action_dims=len(arm_lengths), n_rbf=n_rbf,
                                          n_timesteps=n_timesteps, sdev=sdev)
+        self.render_interval = render_interval
         if render:
             self._renderer = MatplotlibInteractiveRendering(ArmBallsRenderer, width=500, height=500, rgb=rgb,
                                                             arm_lengths=arm_lengths, object_size=object_size,
@@ -417,6 +416,7 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
 
         self._dynamic_environment.reset()
         self._observer.reset()
+        self.n_iters = 0
 
         obs = self._dynamic_environment.observation_sequence
         self._observer.act(observation=obs[-1])
@@ -435,8 +435,9 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
         self._observer.act(observation=env_state)
         self._observation = self._observer.rendering
         self._hidden_state = env_state[-2:]
+        self.n_iters += 1
 
-        if render:
+        if render and self.n_iters % self.render_interval == 0:
             for i in range(self._n_timesteps):
                 self._renderer.act(observation=self._dynamic_environment.observation_sequence[i], **kwargs)
 
@@ -448,11 +449,6 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
     def observation(self) -> np.ndarray:
 
         return self._observation
-
-    @property
-    def action_space(self) -> np.ndarray:
-
-        return self._action_space
 
     @property
     def hidden_state(self):

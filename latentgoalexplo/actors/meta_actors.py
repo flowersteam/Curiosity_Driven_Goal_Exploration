@@ -160,11 +160,6 @@ class IStaticEnvironment(metaclass=ABCMeta):
     def observation(self) -> np.ndarray:
         pass
 
-    @property
-    @abstractmethod
-    def action_space(self) -> np.ndarray:
-        pass
-
 
 class IRewarding(metaclass=ABCMeta):
     """An Interface mixin representing a rewarding actor.

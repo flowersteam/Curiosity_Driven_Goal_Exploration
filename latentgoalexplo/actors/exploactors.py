@@ -1,316 +1,12 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import itertools
-import inspect
 
 from explauto.utils import prop_choice
 
-from meta_actors import *
-import environments
+from latentgoalexplo.actors.meta_actors import *
 
-import sys
-import os
-PACKAGE_PARENT = '../ExplorationAlgorithms/'
-SCRIPT_DIR = os.path.realpath(os.path.dirname(inspect.getfile(inspect.currentframe())))
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-from learning_module import LearningModule
-
-
-class FixedEpisodeDynamizer(AbstractActor, IEpisodicEnvironment, IEpisodicRewarding):
-    """This actor allows to dynamize an environment for a fixed number of iterations.
-    """
-
-    def __init__(self, *args, static_env, n_iter, **kwargs):
-        # assert issubclass(static_env, IStaticEnvironment)
-        # assert issubclass(static_env, IRewarding)
-
-        self._static_env = static_env(*args, **kwargs)
-        self._n_iter = n_iter
-
-        self._observation_sequence = None
-        self._reward_sequence = None
-
-    def reset(self):
-        self._static_env.reset()
-        self._observation_sequence = np.repeat(self._static_env.observation.reshape(1, -1),
-                                               repeats=self._n_iter,
-                                               axis=0)
-        self._reward_sequence = np.array([self._static_env.reward] * self._n_iter)
-
-    def act(self, action_sequence):
-        for i, action in enumerate(action_sequence):
-            self._static_env.act(action=action)
-
-            self._observation_sequence[i] = self._static_env.observation
-
-            self._reward_sequence[i] = self._static_env.reward
-
-    def terminate(self):
-        pass
-
-    @property
-    def observation_sequence(self):
-        return self._observation_sequence
-
-    @property
-    def reward_sequence(self):
-        return self._reward_sequence
-
-    @classmethod
-    def test(cls):
-        pass
-
-
-class MatplotlibInteractiveRendering(AbstractActor):
-    """Check you used the `%matplotlib notebook` magic
-    """
-
-    def __init__(self, renderer, *args, width=600, height=400, figsize=(5, 5), **kwargs):
-        self._renderer = renderer(width=width, height=height, **kwargs)
-        self._width = width
-        self._height = height
-        self._figsize = figsize
-
-        self._fig = None
-        self._ax = None
-        self._imsh = None
-
-    def reset(self):
-        self._renderer.reset()
-        self._fig = plt.figure(figsize=self._figsize)
-        self._ax = self._fig.add_subplot(1, 1, 1)
-        self._imsh = self._ax.imshow(np.random.randn(self._height, self._width, 3))
-        plt.show()
-
-    def act(self, **kwargs):
-        self._renderer.act(**kwargs)
-        self._imsh.set_array(self._renderer.rendering)
-        self._fig.canvas.draw()
-
-    def terminate(self):
-        pass
-
-    @classmethod
-    def test(cls):
-        pass
-
-
-class MatplotlibInteractiveScatterRendering(AbstractActor):
-    """This allows to render the ArmBall Environment
-    """
-
-    def __init__(self, *args, width=600, height=400, figsize=(5, 5), **kwargs):
-        self._width = width
-        self._height = height
-        self._figsize = figsize
-
-        self._fig = None
-        self._ax = None
-        self._imsh = None
-
-    def reset(self):
-        self._fig = plt.figure(figsize=self._figsize)
-        self._ax = self._fig.add_subplot(1, 1, 1)
-        self._imsh = self._ax.scatter(np.random.randn(1), np.random.randn(1))
-        plt.show()
-
-    def act(self, X, Y):
-        self._imsh.remove()
-        self._imsh = self._ax.scatter(X, Y, c=range(X.shape[0]))
-        self._fig.canvas.draw()
-
-    def terminate(self):
-        pass
-
-    @classmethod
-    def test(cls):
-        pass
-
-
-class RbfController(AbstractActor, IController):
-    """This controller generates time-bounded action sequences using radial basis functions.
-    """
-
-    def __init__(self, *args, n_timesteps, n_action_dims, n_rbf, sdev, **kwargs):
-
-        try:
-            import scipy.ndimage
-            globals()['scipy.ndimage'] = scipy.ndimage
-        except:
-            raise ImportError("You need scipy.ndimage to use class {}".format(self.__class__.__name__))
-
-        # The array containing the atoms is created by filtering a multidimensional array
-        # containing indicators at centers of atoms.
-        # We make it larger to convolve outside of support and we cut it after
-        self._bfs_params = np.zeros([int(n_timesteps * 1.25), n_action_dims, n_rbf])
-        width = n_timesteps // (n_rbf)
-        centers = np.cumsum([width] * n_rbf) + int(width // 4)
-        base = np.array(range(n_rbf))
-        self._bfs_params[centers, :, base] = 1.
-        self._bfs_params = scipy.ndimage.gaussian_filter1d(self._bfs_params,
-                                                           sdev,
-                                                           mode='constant',
-                                                           axis=0)
-        self._bfs_params /= self._bfs_params.max()
-
-        self._bfs_params = self._bfs_params[:n_timesteps, :, :]
-
-        self._action_sequence = None
-
-    def reset(self):
-
-        pass
-
-    def act(self, parameters):
-
-        self._action_sequence = np.einsum('ijk,jk->ij', self._bfs_params, parameters)
-
-    def terminate(self):
-
-        pass
-
-    @property
-    def action_sequence(self):
-
-        return self._action_sequence
-
-    @classmethod
-    def test(cls):
-
-        pass
-
-
-class KnnRegressor(AbstractActor, ITrainable, IDataset):
-    """ A wrap around sklearn knn regressor.
-    """
-
-    def __init__(self, *args, n_neighbors=5, metric='euclidean', weights='distance', **kwargs):
-
-        try:
-            from sklearn.neighbors import KNeighborsRegressor
-            globals()['KNeighborsRegressor'] = KNeighborsRegressor
-        except:
-            raise ImportError("You need sklearn.neighbors to use class {}".format(self.__class__.__name__))
-
-        self._model = KNeighborsRegressor(n_neighbors=n_neighbors, metric=metric, weights=weights)
-
-        # Needed since sklearn reset data at each fit call.
-        self._X = None
-        self._y = None
-        self._prediction = None
-        self._performance = None
-
-    def reset(self, X_train, y_train):  # Depending on the model, it may be initialized with train values.
-
-        self._X = X_train
-        self._y = y_train
-        self._model.fit(self._X, self._y)
-        self._prediction = self._y
-        self._performance = self._model.score(self._X, self._y)
-
-    def act(self, *args, X_pred=None, X_train=None, y_train=None, X_test=None, y_test=None):
-
-        if X_train is not None and X_pred is not None and X_test is not None:
-            raise Exception("Calling multiple modes at once is not possible.")
-
-        if X_train is not None:
-            self._X = np.concatenate([self._X, X_train])
-            self._y = np.concatenate([self._y, y_train])
-            self._model.fit(self._X, self._y)
-        elif X_test is not None:
-            self._performance = self._model.score(X_test, y_test)
-        elif X_pred is not None:
-            self._prediction = self._model.predict(X_pred)
-
-    def terminate(self):
-
-        pass
-
-    @property
-    def prediction(self):
-
-        return self._prediction
-
-    @property
-    def performance(self):
-
-        return self._performance
-
-    @property
-    def dataset(self):
-
-        return self._X, self._y
-
-    @classmethod
-    def test(cls):
-
-        pass
-
-
-class GaussianDistribution(AbstractActor, IDistribution):
-    """ This actor implements a gaussian distribution.
-    """
-
-    def __init__(self, *args, latent_sample_sdev, **kwargs):
-        self._dim = None
-        self._sample = None
-        self._sdev = latent_sample_sdev
-
-    def reset(self, X):
-        self._dim = X.shape[1]
-        self._sample = self._sdev * np.random.randn(1, self._dim)
-
-    def act(self, n_points=1):
-        assert n_points > 0.
-
-        self._sample = self._sdev * np.random.randn(n_points, self._dim)
-
-    def terminate(self):
-        pass
-
-    @property
-    def sample(self):
-        return self._sample
-
-    @classmethod
-    def test(self):
-        pass
-
-
-class SamplerVAELatents(AbstractActor, IDistribution):
-    """ This actor implements a gaussian distribution.
-    """
-
-    def __init__(self, *args, latent_sample_sdev, **kwargs):
-
-        self._dim = None
-        self._sample = None
-        self._sdev = latent_sample_sdev
-
-    def reset(self, X):
-
-        self._dim = X.shape[1]
-
-    def act(self, latents_values, indices, n_points=1):
-
-        assert n_points > 0.
-
-        self._sample = np.array([latents_values] * n_points)
-        self._sample[:, [indices]] = self._sdev * np.random.randn(n_points, len(indices))
-
-    def terminate(self):
-
-        pass
-
-    @property
-    def sample(self):
-
-        return self._sample
-
-    @classmethod
-    def test(self):
-
-        pass
+from latentgoalexplo.curiosity.learning_module import LearningModule
+from latentgoalexplo.environments.explautoenv import ExplautoEnv
 
 
 class RandomParameterizationExploration(AbstractActor, IExplorer):
@@ -318,7 +14,6 @@ class RandomParameterizationExploration(AbstractActor, IExplorer):
     """
 
     def __init__(self, static_env, **kwargs):
-        # assert issubclass(static_env, IStaticEnvironment)
 
         self._env = static_env(**kwargs)
 
@@ -381,8 +76,6 @@ class ActiveGoalExplorationUgl(AbstractActor, IExplorer):
                  explo_noise_sdev, win_size, s_bound=3., **kwargs):
 
         assert issubclass(static_env, IStaticEnvironment)
-        # assert issubclass(representation, IRepresentation)
-        # assert issubclass(representation, ITrainable)
 
         self._env = static_env(**kwargs)
         self._rep = representation(**kwargs)
@@ -404,7 +97,7 @@ class ActiveGoalExplorationUgl(AbstractActor, IExplorer):
                 s_mins=[-s_bound] * self._n_latents,
                 s_maxs=[s_bound] * self._n_latents
         )
-        self._latents_env = environments.ExplautoEnv(**self._latents_env_config)
+        self._latents_env = ExplautoEnv(**self._latents_env_config)
         self._learning_modules = []
         self._interests_evolution = []
         self._explo_evolution = []
@@ -630,14 +323,3 @@ class ActiveGoalExplorationUgl(AbstractActor, IExplorer):
     def test(cls):
 
         pass
-
-
-if __name__ == '__main__':
-    from armballs import *
-
-    # We perform Bootstrap
-    a = RandomParameterizationExploration(static_env=MyArmBalls, object_size=0.1, stick_length=0.4,
-                                          stick_handle_tol=0.05, n_rbf=5, sdev=5., n_timesteps=50,
-                                          width=64, height=64, rgb=False, render=False, env_noise=0.1)
-    a.reset()
-    a.act(n_iter=10, render=False)

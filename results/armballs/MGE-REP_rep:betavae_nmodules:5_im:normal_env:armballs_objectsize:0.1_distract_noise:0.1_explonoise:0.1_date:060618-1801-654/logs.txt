@@ -1,0 +1,7 @@
+[2018-06-06 18:01:58,183] INFO[mge_rep_armballs:run_experiments:85]  Instantiating the Environment
+[2018-06-06 18:01:58,184] INFO[mge_rep_armballs:run_experiments:147]  Instantiating the Explorator
+[2018-06-06 18:01:58,185] INFO[mge_rep_armballs:ModularGoalExplorationUglExperiment:28]  Observation phase
+[2018-06-06 18:01:58,723] INFO[mge_rep_armballs:ModularGoalExplorationUglExperiment:41]  Bootstrapping phase
+[2018-06-06 18:02:00,684] INFO[mge_rep_armballs:ModularGoalExplorationUglExperiment:46]  Loading representation
+[2018-06-06 18:02:06,634] INFO[mge_rep_armballs:ModularGoalExplorationUglExperiment:57]  Starts exploration
+[2018-06-06 18:03:44,186] INFO[mge_rep_armballs:ModularGoalExplorationUglExperiment:60]  Exploration over, saving data

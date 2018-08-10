@@ -6,15 +6,13 @@ import json
 import pickle
 
 import numpy as np
+
 from explauto.utils import prop_choice
 
-import sys
-sys.path.append("./src")
-
-from src import actors, armballs, bigarmballs, environments
-
-from ExplorationAlgorithms.learning_module import LearningModule
-
+from latentgoalexplo.actors import exploactors
+from latentgoalexplo.environments import armballs
+from latentgoalexplo.environments.explautoenv import ExplautoEnv
+from latentgoalexplo.curiosity.learning_module import LearningModule
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s[%(module)s:%(funcName)s:%(lineno)d]  %(message)s")
 os.environ["JOBLIB_TEMP_FOLDER"] = "."
@@ -22,16 +20,16 @@ os.environ["JOBLIB_TEMP_FOLDER"] = "."
 
 def ModularGoalExplorationFIExperiment(static_env, env_config, explauto_config, representation, interest_model,
                                        n_explore, explo_ratio, explo_noise_sdev, win_size, n_exploration_iterations,
-                                       n_bootstrap, seed, logdir='test_1', logger=None):
+                                       n_bootstrap, seed, logdir='test', logger=None):
     np.random.seed(seed)
 
     logger.info("Bootstrapping phase")
-    a = actors.RandomParameterizationExploration(static_env=static_env, **env_config)
+    a = exploactors.RandomParameterizationExploration(static_env=static_env, **env_config)
     a.reset()
     a.act(n_iter=n_bootstrap, render=False)
 
     # Define motor and sensory spaces:
-    explauto_env = environments.ExplautoEnv(**explauto_config)
+    explauto_env = ExplautoEnv(**explauto_config)
     m_ndims = explauto_env.conf.m_ndims  # number of motor parameters
     m_space = range(m_ndims)
 
@@ -199,7 +197,7 @@ def main():
         args['name'] = ("MGE-FI %s %s" % (args['environment'], str(datetime.datetime.now()))).title()
 
     if args['test']:
-        args['path'] = 'test_1'
+        args['path'] = 'test'
     args['path'] = os.path.join(args['path'], args['name'])
     logger = logging.getLogger(args['name'], )
     logger.setLevel(logging.INFO)

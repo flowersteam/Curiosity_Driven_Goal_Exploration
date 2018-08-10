@@ -1,0 +1,25 @@
+[2018-06-02 19:28:44,871] INFO[mge_fi_armballs:run_experiments:159]  Instantiating the Environment
+[2018-06-02 19:28:44,872] INFO[mge_fi_armballs:run_experiments:166]  Instantiating the Explorator
+[2018-06-02 19:28:44,873] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:28]  Bootstrapping phase
+[2018-06-02 19:28:45,253] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:73]  Starting exploration
+[2018-06-02 19:28:47,397] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 500 / 10000
+[2018-06-02 19:28:49,579] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 1000 / 10000
+[2018-06-02 19:28:51,768] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 1500 / 10000
+[2018-06-02 19:28:53,962] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 2000 / 10000
+[2018-06-02 19:28:56,147] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 2500 / 10000
+[2018-06-02 19:28:58,342] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 3000 / 10000
+[2018-06-02 19:29:00,531] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 3500 / 10000
+[2018-06-02 19:29:02,726] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 4000 / 10000
+[2018-06-02 19:29:04,914] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 4500 / 10000
+[2018-06-02 19:29:07,113] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 5000 / 10000
+[2018-06-02 19:29:09,304] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 5500 / 10000
+[2018-06-02 19:29:11,498] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 6000 / 10000
+[2018-06-02 19:29:13,688] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 6500 / 10000
+[2018-06-02 19:29:15,888] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 7000 / 10000
+[2018-06-02 19:29:18,079] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 7500 / 10000
+[2018-06-02 19:29:20,283] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 8000 / 10000
+[2018-06-02 19:29:22,476] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 8500 / 10000
+[2018-06-02 19:29:24,673] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 9000 / 10000
+[2018-06-02 19:29:26,874] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 9500 / 10000
+[2018-06-02 19:29:29,084] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:77]  Iteration: 10000 / 10000
+[2018-06-02 19:29:29,106] INFO[mge_fi_armballs:ModularGoalExplorationFIExperiment:112]  Exploration finished, saving data

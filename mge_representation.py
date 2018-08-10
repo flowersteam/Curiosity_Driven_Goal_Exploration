@@ -7,10 +7,10 @@ import json
 import numpy as np
 import torch
 
-import sys
-sys.path.append("./src")
+from latentgoalexplo.actors import exploactors
+from latentgoalexplo.environments import armballs
+from latentgoalexplo.representation import representation_pytorch
 
-from src import actors, representation_pytorch, armballs, bigarmballs
 
 logging.basicConfig(level=logging.INFO,
                     format="[%(asctime)s] %(levelname)s[%(module)s:%(funcName)s:%(lineno)d]  %(message)s")
@@ -21,7 +21,7 @@ def ModularGoalExplorationUglExperiment(static_env, base_renderer, env_config, r
                                         network_type, n_channels, model_path, n_latents,
                                         interest_model, n_explore, explo_ratio, explo_noise_sdev, n_modules, win_size,
                                         n_bootstrap, n_exploration_iterations, s_bound,
-                                        seed, logdir='test_1', log_interval=10, logger=None):
+                                        seed, logdir='test', log_interval=10, logger=None):
     np.random.seed(seed)
     torch.manual_seed(seed)
 
@@ -32,20 +32,20 @@ def ModularGoalExplorationUglExperiment(static_env, base_renderer, env_config, r
 
     training_images = []
     for i in range(1000):
-        state = np.random.uniform(-1, 1, a.observation_space.shape[0])
+        state = np.random.uniform(-1, 1, a.action_space.shape[0])
         a.act(observation=state)
         training_images.append(a.rendering)
     training_images = np.array(training_images)
 
     # We perform Bootstrap
     logger.info("Bootstrapping phase")
-    a = actors.RandomParameterizationExploration(static_env=static_env, **env_config)
+    a = exploactors.RandomParameterizationExploration(static_env=static_env, **env_config)
     a.reset()
     a.act(n_iter=n_bootstrap, render=False)
 
     logger.info("Loading representation")
     # We perform AGE-UGL
-    b = actors.ActiveGoalExplorationUgl(static_env=static_env, representation=representation,
+    b = exploactors.ActiveGoalExplorationUgl(static_env=static_env, representation=representation,
                                         network_type=network_type, n_channels=n_channels, n_latents=n_latents,
                                         beta=1, initial_epochs=0, learning_rate=0,
                                         interest_model=interest_model, n_explore=n_explore, explo_ratio=explo_ratio,
@@ -179,7 +179,7 @@ def main():
         args['representation'], args['environment'], str(datetime.datetime.now()))).title()
 
     if args['test']:
-        args['path'] = 'test_1'
+        args['path'] = 'test'
     args['path'] = os.path.join(args['path'], args['name'])
     logger = logging.getLogger(args['name'], )
     logger.setLevel(logging.INFO)

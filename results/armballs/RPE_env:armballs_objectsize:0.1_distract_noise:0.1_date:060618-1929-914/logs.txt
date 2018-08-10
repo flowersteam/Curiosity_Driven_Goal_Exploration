@@ -1,0 +1,4 @@
+[2018-06-06 19:29:43,287] INFO[rpe:run_experiments:37]  Instantiating the Environment
+[2018-06-06 19:29:43,288] INFO[rpe:run_experiments:96]  Instantiating the Explorator
+[2018-06-06 19:29:43,288] INFO[rpe:RandomParameterExplorationExperiment:21]  Starting random parameter exploration
+[2018-06-06 19:30:59,438] INFO[rpe:RandomParameterExplorationExperiment:26]  Exploration over, saving data
