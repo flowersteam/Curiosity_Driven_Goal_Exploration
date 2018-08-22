@@ -316,7 +316,7 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
                                                           distract_size=distract_size, distract_noise=distract_noise)
         self._controller = RbfController(n_action_dims=len(arm_lengths), n_rbf=n_rbf,
                                          n_timesteps=n_timesteps, sdev=sdev)
-        self.render_interval = render_interval
+        #self.render_interval = render_interval
         if render:
             self._renderer = MatplotlibInteractiveRendering(ArmBallsRenderer, width=500, height=500,
                                                             rgb=False, object_size=object_size,
