@@ -297,7 +297,7 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
 
     def __init__(self, *args, arm_lengths=np.array([0.3, 0.2, 0.2, 0.1, 0.1, 0.05, 0.05]),
                  object_size=0.2, distract_size=0.15, distract_noise=0.1,
-                 n_rbf=5, sdev=5., n_timesteps=150, render=False, **kwargs):
+                 n_rbf=5, sdev=5., n_timesteps=150, render=False, render_interval=1, **kwargs):
 
         self._arm_lengths = arm_lengths
         self._object_size = object_size
@@ -306,6 +306,7 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
         self._n_rbf = n_rbf
         self._n_timesteps = n_timesteps
         self._sdev = sdev
+        self.epochs = 0
 
         # We set the spaces
         self.observation_space = np.array([[-1, 1]] * 4)
@@ -319,7 +320,7 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
         self.render_interval = render_interval
         if render:
             self._renderer = MatplotlibInteractiveRendering(ArmBallsRenderer, width=500, height=500,
-                                                            rgb=False, object_size=object_size,
+                                                            rgb=True, object_size=object_size,
                                                             distract_size=distract_size)
             self._renderer.reset()
 
@@ -329,7 +330,6 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
     def reset(self):
 
         self._dynamic_environment.reset()
-        self.n_iters = 0
 
         obs = self._dynamic_environment.observation_sequence
 
@@ -344,9 +344,9 @@ class MyArmBalls(AbstractActor, IStaticEnvironment):
         self._dynamic_environment.act(action_sequence)
         self._observation = self._dynamic_environment.observation_sequence[-1, -4:]
         self._hidden_state = self._dynamic_environment.observation_sequence[-1, -2:]
-        self.n_iters += 1
-        
-        if render:
+        self.epochs += 1
+
+        if render and self.epochs % self.render_interval == 0:
             for i in range(self._n_timesteps):
                 self._renderer.act(observation=self._dynamic_environment.observation_sequence[i], **kwargs)
 
@@ -377,8 +377,8 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
 
     def __init__(self, arm_lengths=np.array([0.3, 0.2, 0.2, 0.1, 0.1, 0.05, 0.05]),
                  object_size=0.2, distract_size=0.15, distract_noise=0.1,
-                 n_rbf=5, sdev=5., n_timesteps=150, env_noise=0, render=False, render_interval=500,
-                 rgb=False, render_arm=False, distract_first=False, **kwargs):
+                 n_rbf=5, sdev=5., n_timesteps=150, env_noise=0, render=False, render_interval=1,
+                 rgb=True, render_arm=False, distract_first=False, **kwargs):
 
         self._arm_lengths = arm_lengths
         self._object_size = object_size
@@ -387,11 +387,13 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
         self._n_rbf = n_rbf
         self._n_timesteps = n_timesteps
         self._sdev = sdev
+        self.epochs = 0
 
         # We set the spaces
         self.action_space = np.array([[-1, 1]] * arm_lengths.shape[0] * n_rbf)
 
-        self._dynamic_environment = FixedEpisodeDynamizer(static_env=ArmBalls, n_iter=n_timesteps, arm_lengths=arm_lengths,
+        self._dynamic_environment = FixedEpisodeDynamizer(static_env=ArmBalls, n_iter=n_timesteps,
+                                                          arm_lengths=arm_lengths,
                                                           object_size=object_size, distract_size=distract_size,
                                                           distract_noise=distract_noise, **kwargs)
         self._controller = RbfController(n_action_dims=len(arm_lengths), n_rbf=n_rbf,
@@ -416,7 +418,6 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
 
         self._dynamic_environment.reset()
         self._observer.reset()
-        self.n_iters = 0
 
         obs = self._dynamic_environment.observation_sequence
         self._observer.act(observation=obs[-1])
@@ -435,9 +436,9 @@ class MyArmBallsObserved(AbstractActor, IStaticEnvironment):
         self._observer.act(observation=env_state)
         self._observation = self._observer.rendering
         self._hidden_state = env_state[-2:]
-        self.n_iters += 1
+        self.epochs += 1
 
-        if render and self.n_iters % self.render_interval == 0:
+        if render and self.epochs % self.render_interval == 0:
             for i in range(self._n_timesteps):
                 self._renderer.act(observation=self._dynamic_environment.observation_sequence[i], **kwargs)
 
