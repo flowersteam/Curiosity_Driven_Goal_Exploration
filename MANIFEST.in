@@ -1,1 +1,1 @@
-include latentgoalexplo/representation/weights/*
+include weights/*

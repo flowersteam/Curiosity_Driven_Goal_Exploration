@@ -815,11 +815,11 @@ class PytorchBetaVAERepresentation(AbstractActor, IRepresentation, ITrainable, I
         self._sorted_latents = indices.cpu().detach().numpy()
 
 
-model_path = os.path.dirname(os.path.abspath(__file__)) + '/weights/ArmBalls_rgb_BallDistract_ent'
+model_path = os.path.dirname(os.path.abspath(__file__)) + '/../../weights/ArmBalls_rgb_BallDistract_ent'
 ArmBallsVAE = PytorchBetaVAERepresentation(n_latents=10, initial_epochs=0, beta=1, network_type='cnn',
                                            n_channels=3, height=64, width=64)
 ArmBallsVAE.load_model(model_path)
-model_path = os.path.dirname(os.path.abspath(__file__)) + '/weights/ArmBalls_rgb_BallDistract'
+model_path = os.path.dirname(os.path.abspath(__file__)) + '/../../weights/ArmBalls_rgb_BallDistract'
 ArmBallsBetaVAE = PytorchBetaVAERepresentation(n_latents=10, initial_epochs=0, beta=1, network_type='cnn',
                                                n_channels=3, height=64, width=64)
 ArmBallsBetaVAE.load_model(model_path)
