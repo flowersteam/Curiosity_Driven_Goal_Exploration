@@ -12,7 +12,7 @@ To run a single experiment, you can run one of the three following python script
 
 Examples of some exploration algorithms together with a demonstration of the environment are provided in the notebook:
 
-+ `notebooks/0_ArmBalls.ipynb`
++ `notebooks/ArmBalls.ipynb`
 
 In order to reproduce the results, you can also run a full campaign batch by running the following python scripts:
 + `script_rpe.py` to perform a Random Parameterization Exploration campaign
