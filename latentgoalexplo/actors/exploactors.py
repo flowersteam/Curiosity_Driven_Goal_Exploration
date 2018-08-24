@@ -204,6 +204,7 @@ class ActiveGoalExplorationUgl(AbstractActor, IExplorer):
 
         # Load the representation with pre-trained weights
         self._rep = representation
+        self._rep.estimate_kld(outcomes_train, outcomes_train)
         # Represent the set of outcomes
         self._rep.act(X_pred=X)
         self._outcomes_reps = [self._rep.representation[i] for i in range(self._rep.representation.shape[0])]
