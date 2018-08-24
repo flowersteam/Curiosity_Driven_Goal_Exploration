@@ -813,38 +813,3 @@ class PytorchBetaVAERepresentation(AbstractActor, IRepresentation, ITrainable, I
         values, indices = KLD.sort(descending=True)
         self._kld_latents = values.cpu().detach().numpy()
         self._sorted_latents = indices.cpu().detach().numpy()
-
-
-model_path = os.path.dirname(os.path.abspath(__file__)) + '/../../weights/ArmBalls_rgb_BallDistract_ent'
-ArmBallsVAE = PytorchBetaVAERepresentation(n_latents=10, initial_epochs=0, beta=1, network_type='cnn',
-                                           n_channels=3, height=64, width=64)
-ArmBallsVAE.load_model(model_path)
-model_path = os.path.dirname(os.path.abspath(__file__)) + '/../../weights/ArmBalls_rgb_BallDistract'
-ArmBallsBetaVAE = PytorchBetaVAERepresentation(n_latents=10, initial_epochs=0, beta=1, network_type='cnn',
-                                               n_channels=3, height=64, width=64)
-ArmBallsBetaVAE.load_model(model_path)
-
-
-if __name__ == '__main__':
-    from armstickball import ArmStickBallRenderer
-    from armball import MyArmBallObserved
-    from actors import RandomGoalExplorationUglBeta
-
-    # We observe the ball moving (probably a scientist)
-    a = ArmStickBallRenderer(width=64, height=64, rgb=True, render_arm=False, object_size=0.2, stick_length=0.4)
-    outcomes_train = []
-    a.reset()
-    for i in range(100):
-        random_state = np.concatenate([[0, 0, 0, 0, 0, 0, 0], np.random.uniform(-1, 1, 7)])
-        a.act(observation=random_state)
-        outcomes_train.append(a.rendering)
-    outcomes_train = np.array(outcomes_train)
-    print('Done initial observation')
-
-    # We perform RGE-UGL
-    rep = PytorchBetaVAERepresentation(beta=100, n_latents=10, width=64, height=64, network_type='cnn', n_channels=3,
-                                       initial_epochs=20, Ta=200, capacity=25, capacity_change_duration=12,
-                                       batch_size=32, learning_rate=1e-4,
-                                       visdom_record=True, visdom_env="test", log_interval=1)
-    rep.reset(X_train=outcomes_train, y_train=outcomes_train, typical_img=outcomes_train[0])
-    print('PytorchBetaVAERepresentation working')
