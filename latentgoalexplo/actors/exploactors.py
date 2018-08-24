@@ -111,7 +111,7 @@ class ActiveGoalExplorationUgl(AbstractActor, IExplorer):
         self._attainable_points = None
         self._attainable_reps = None
 
-    def reset(self, actions, outcomes, outcomes_states, outcomes_train, n_points=40):
+    def reset(self, actions, outcomes, outcomes_states, outcomes_train):
 
         self._actions = actions
         self._outcomes = outcomes
@@ -147,20 +147,10 @@ class ActiveGoalExplorationUgl(AbstractActor, IExplorer):
 
         self._env.reset()
 
-        if self._rep._network_type == 'fc':
-            # We store the representation of attainable points
-            attainable_space = [np.linspace(-1.0, 1.0, n_points) for i in range(2)]
-            self._attainable_points = []
-            for idx, coor in enumerate(itertools.product(*attainable_space)):
-                self._env._observer.act(np.concatenate([[0, 0, 0, 0, 0, 0, 0], np.array(coor)]))
-                self._attainable_points.append(self._env._observer.rendering)
-            self._attainable_points = np.array(self._attainable_points)
-            self._rep.act(X_pred=self._attainable_points)
-            self._attainable_reps = self._rep.representation
         self._sorted_latents = self._rep._sorted_latents
         self._kld_latents = self._rep._kld_latents
 
-    def load_representation(self, actions, outcomes, outcomes_states, outcomes_train, model_path, n_points=40):
+    def load_representation(self, actions, outcomes, outcomes_states, outcomes_train, model_path):
 
         self._actions = actions
         self._outcomes = outcomes
@@ -197,16 +187,45 @@ class ActiveGoalExplorationUgl(AbstractActor, IExplorer):
 
         self._env.reset()
 
-        if self._rep._network_type == 'fc':
-            # We store the representation of attainable points
-            attainable_space = [np.linspace(-1.0, 1.0, n_points) for i in range(2)]
-            self._attainable_points = []
-            for idx, coor in enumerate(itertools.product(*attainable_space)):
-                self._env._observer.act(np.concatenate([[0, 0, 0, 0, 0, 0, 0], np.array(coor)]))
-                self._attainable_points.append(self._env._observer.rendering)
-            self._attainable_points = np.array(self._attainable_points)
-            self._rep.act(X_pred=self._attainable_points)
-            self._attainable_reps = self._rep.representation
+        self._sorted_latents = self._rep._sorted_latents
+        self._kld_latents = self._rep._kld_latents
+
+    def use_representation(self, actions, outcomes, outcomes_states, outcomes_train, representation):
+
+        self._actions = actions
+        self._outcomes = outcomes
+        self._outcomes_states = outcomes_states
+        self._outcomes_train = outcomes_train
+
+        X = np.array(self._outcomes)
+        y = np.array(self._actions)
+
+        self._typical_img = self._env._observer.typical_img
+
+        # Load the representation with pre-trained weights
+        self._rep = representation
+        # Represent the set of outcomes
+        self._rep.act(X_pred=X)
+        self._outcomes_reps = [self._rep.representation[i] for i in range(self._rep.representation.shape[0])]
+
+        # Define motor and sensory spaces:
+        m_ndims = self._latents_env.conf.m_ndims  # number of motor parameters
+        m_space = range(m_ndims)
+        for i in range(self._n_modules):
+            module_id = "mod" + str(i)
+            s_mod = self._rep.sorted_latents[
+                    i * self._n_latents // self._n_modules:(i + 1) * self._n_latents // self._n_modules] + m_ndims
+            module = LearningModule(module_id, m_space, s_mod, self._latents_env.conf, explo_noise=self._explo_noise_sdev,
+                                    win_size=self._win_size, interest_model=self._interest_model)
+            self._learning_modules.append(module)
+
+        for i, m in enumerate(actions):
+            s = self._outcomes_reps[i]
+            for module in self._learning_modules:
+                module.update_sm(m, module.get_s(np.concatenate([m, s])))
+
+        self._env.reset()
+
         self._sorted_latents = self._rep._sorted_latents
         self._kld_latents = self._rep._kld_latents
 
