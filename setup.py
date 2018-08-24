@@ -17,4 +17,5 @@ setup(name='latentgoalexplo',
           'matplotlib',
           'visdom',
       ],
+      include_package_data=True,
       zip_safe=False)
