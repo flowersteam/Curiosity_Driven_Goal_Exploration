@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='latentgoalexplo',
       version='0.0.1',
@@ -7,7 +7,8 @@ setup(name='latentgoalexplo',
       author='Adrien Laversanne-Finot',
       author_email='adrien.laversanne-finot@inria.fr',
       license='MIT',
-      packages=['latentgoalexplo'],
+      packages=[package for package in find_packages()
+                if package.startswith('latentgoalexplo')],
       install_requires=[
           'numpy',
           'torch',
