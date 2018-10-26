@@ -28,7 +28,7 @@ Finally, to generate the different figures out of the raw results, you can use t
 
 ## Installation
 
-The code is intended to be run on python 3.5 or higher.
+The code is intended to be run on python 3.6 or higher. It may run on older versions of python.
 
 To install, clone repository, then:
 
